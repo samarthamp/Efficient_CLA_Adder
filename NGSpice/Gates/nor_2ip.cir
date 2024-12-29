@@ -1,0 +1,51 @@
+** Implementing Nor gate (2 input)
+
+.include ../TSMC_180nm.txt
+.param vdd=1.8
+.param LAMBDA=0.09u
+.param width_N={20*LAMBDA}
+.param width_P={2*width_N}
+.global vdd gnd
+
+Vdd vdd gnd dc 1.8
+* trise = tfall = 5% of T_on
+Va  a  gnd pulse 1.8 0 10ns 1ns   1ns   20ns 40ns
+Vb  b  gnd pulse 1.8 0 10ns 1ns   1ns   40ns 80ns
+
+* D G S B
+.subckt nor_2ip  out    a    b    width_N = {width_N} width_P = {width_P}
+    MP1   int1    a    vdd    vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+4*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+4*width_P}
+
+    MP2   out    b    int1    vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+4*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+4*width_P}
+
+    MN1   out    a    gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+
+    MN2   out    b    gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+.ends nor_2ip
+
+x1 out a b nor_2ip width_N = {width_N} width_P = {width_P}
+CL out gnd 100f
+
+.ic v(out) = 0
+.tran 1ps 200ns
+
+* a - out propagation delay
+.measure tran t_rise TRIG V(a) VAL='0.9' FALL=1 TARG V(out) VAL='0.9' RISE=1
+.measure tran t_fall TRIG V(a) VAL='0.9' RISE=1 TARG V(out) VAL='0.9' FALL=1
+.measure tran prop_delay param ='(t_rise + t_fall)/2'
+
+* 20lambda: 353p, 312p, 332p
+
+.control
+set hcopypscolor = 1
+set color0 = white
+set color1 = black
+
+run
+set curplottitle= "M P Samartha-2023102038"
+plot a+4, b+2, out   
+.endc

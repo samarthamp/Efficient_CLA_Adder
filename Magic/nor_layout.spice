@@ -1,0 +1,61 @@
+* SPICE3 file created from nor_layout.ext - technology: scmos
+
+.include TSMC_180nm.txt
+.param vdd=1.8
+.param LAMBDA=0.09u
+.global vdd gnd
+.option scale=0.09u
+
+M1000 gnd b out Gnd CMOSN w=10 l=2
++  ad=100 pd=60 as=80 ps=36
+M1001 out b a_13_n14# w_0_n20# CMOSP w=40 l=2
++  ad=200 pd=90 as=320 ps=96
+M1002 out a gnd Gnd CMOSN w=10 l=2
++  ad=0 pd=0 as=0 ps=0
+M1003 a_13_n14# a vdd w_0_n20# CMOSP w=40 l=2
++  ad=0 pd=0 as=200 ps=90
+C0 w_0_n20# b 0.06fF
+C1 w_0_n20# out 0.02fF
+C2 a gnd 0.02fF
+C3 a b 0.25fF
+C4 a out 0.04fF
+C5 a w_0_n20# 0.06fF
+C6 w_0_n20# vdd 0.02fF
+C7 out gnd 0.02fF
+C8 out b 0.21fF
+C9 gnd Gnd 0.09fF
+C10 out Gnd 0.08fF
+C11 vdd Gnd 0.01fF
+C12 b Gnd 0.19fF
+C13 a Gnd 0.16fF
+C14 w_0_n20# Gnd 1.78fF
+
+Vdd vdd gnd dc 1.8
+* trise = tfall = 5% of T_on
+Va  a  gnd pulse 1.8 0 10ns 100ps   100ps   20ns 40ns
+Vb  b  gnd pulse 1.8 0 10ns 100ps   100ps   40ns 80ns
+* .ic v(out) = 0
+.tran 1ps 200ns 1ps
+* CL out gnd 50f
+
+* clk - out propagation delay
+.measure tran t_rise TRIG V(a) VAL='0.9' FALL=1 TARG V(out) VAL='0.9' RISE=1
+.measure tran t_fall TRIG V(a) VAL='0.9' RISE=2 TARG V(out) VAL='0.9' FALL=1
+.measure tran prop_delay param ='(t_rise + t_fall)/2'
+
+* 20lambda: 304p, 245p, 275p
+* saturates around 90p
+
+.control
+set hcopypscolor = 1
+set color0 = white
+set color1 = black
+
+run
+set curplottitle= "M P Samartha-2023102038"
+plot a+4, b+2, out
+.endc
+
+
+
+

@@ -1,0 +1,120 @@
+* SPICE3 file created from /home/mpsamartha/Ubuntu_Backed/Project/Magic/tspc_layout.ext - technology: scmos
+
+.include TSMC_180nm.txt
+.param vdd=1.8
+.param LAMBDA=0.09u
+.global vdd gnd
+.option scale=0.09u
+
+Vdd vdd gnd dc 1.8
+Vin  in  gnd pulse 0 1.8 0 10ps   10ps   20ns 40ns
+Vclk clk gnd pulse 0 1.8 3ns 10ps   10ps   10ns 20ns
+
+M1000 d1 in vdd w_n11_n70# CMOSP w=40 l=2
++  ad=320 pd=96 as=800 ps=380
+M1001 int2 int1 vdd w_n6_n10# CMOSP w=20 l=2
++  ad=100 pd=50 as=0 ps=0
+M1002 a_2_n95# in gnd Gnd CMOSN w=10 l=2
++  ad=60 pd=32 as=400 ps=220
+M1003 mid2 clk d3 Gnd CMOSN w=20 l=2
++  ad=100 pd=50 as=160 ps=56
+M1004 int1 clk d2 w_n11_n70# CMOSP w=40 l=2
++  ad=200 pd=90 as=320 ps=96
+M1005 out1 clk d4 Gnd CMOSN w=20 l=2
++  ad=100 pd=50 as=160 ps=56
+M1006 out out1 vdd w_63_n31# CMOSP w=20 l=2
++  ad=100 pd=50 as=0 ps=0
+M1007 a_2_n95# clk d1 w_n11_n70# CMOSP w=40 l=2
++  ad=200 pd=90 as=0 ps=0
+M1008 int2 int1 gnd Gnd CMOSN w=10 l=2
++  ad=50 pd=30 as=0 ps=0
+M1009 d3 int2 gnd Gnd CMOSN w=20 l=2
++  ad=0 pd=0 as=0 ps=0
+M1010 out out1 gnd Gnd CMOSN w=10 l=2
++  ad=50 pd=30 as=0 ps=0
+M1011 d4 mid2 gnd Gnd CMOSN w=20 l=2
++  ad=0 pd=0 as=0 ps=0
+M1012 d2 a_2_n95# vdd w_n11_n70# CMOSP w=40 l=2
++  ad=0 pd=0 as=0 ps=0
+M1013 int1 a_2_n95# gnd Gnd CMOSN w=10 l=2
++  ad=60 pd=32 as=0 ps=0
+M1014 mid2 int2 vdd w_n11_n70# CMOSP w=20 l=2
++  ad=100 pd=50 as=0 ps=0
+M1015 out1 mid2 vdd w_75_n70# CMOSP w=20 l=2
++  ad=100 pd=50 as=0 ps=0
+C0 a_2_n95# in 0.04fF
+C1 w_75_n70# out1 0.02fF
+C2 vdd w_n6_n10# 0.02fF
+C3 w_n11_n70# clk 0.13fF
+C4 w_n11_n70# d1 0.02fF
+C5 d2 vdd 0.11fF
+C6 out1 gnd 0.50fF
+C7 vdd int1 0.07fF
+C8 w_75_n70# vdd 0.02fF
+C9 d3 gnd 0.10fF
+C10 a_2_n95# clk 0.06fF
+C11 int2 vdd 0.05fF
+C12 a_2_n95# d1 0.15fF
+C13 out gnd 0.08fF
+C14 int1 w_n6_n10# 0.07fF
+C15 w_75_n70# mid2 0.07fF
+C16 w_n11_n70# a_2_n95# 0.09fF
+C17 d2 int1 0.14fF
+C18 int2 w_n6_n10# 0.02fF
+C19 out1 w_63_n31# 0.07fF
+C20 w_n11_n70# vdd 0.08fF
+C21 int2 int1 0.13fF
+C22 out1 out 0.05fF
+C23 out w_63_n31# 0.02fF
+C24 gnd int1 0.09fF
+C25 clk int1 0.06fF
+C26 w_63_n31# vdd 0.02fF
+C27 w_n11_n70# mid2 0.02fF
+C28 d4 gnd 0.10fF
+C29 w_n11_n70# d2 0.02fF
+C30 int2 gnd 0.05fF
+C31 w_n11_n70# in 0.06fF
+C32 w_n11_n70# int1 0.05fF
+C33 clk gnd 1.53fF
+C34 w_n11_n70# int2 0.11fF
+C35 d4 Gnd 0.01fF
+C36 d3 Gnd 0.01fF
+C37 mid2 Gnd 0.05fF
+C38 d2 Gnd 0.00fF
+C39 d1 Gnd 0.01fF
+C40 a_2_n95# Gnd 0.24fF
+C41 clk Gnd 1.39fF
+C42 in Gnd 0.17fF
+C43 gnd Gnd 0.27fF
+C44 vdd Gnd 0.04fF
+C45 int1 Gnd 0.26fF
+C46 int2 Gnd 0.37fF
+C47 w_75_n70# Gnd 0.77fF
+C48 w_63_n31# Gnd 0.14fF
+C49 w_n11_n70# Gnd 3.86fF
+C50 w_n6_n10# Gnd 0.77fF
+
+.ic v(out) = 0
+.tran 1ps 100ns
+
+* out rise and fall time
+.measure tran t_rise TRIG V(out) VAL='0.18' RISE=1 TARG V(out) VAL='1.62' RISE=1 
+.measure tran t_fall TRIG V(out) VAL='1.62' FALL=1 TARG V(out) VAL='0.18' FALL=1
+.measure tran tpd_ave param ='(t_rise + t_fall)/2'  
+
+* clk - out propagation delay
+.measure tran tcq_rise TRIG V(clk) VAL='0.9' RISE=1 TARG V(out) VAL='0.9' RISE=1 
+.measure tran tcq_fall TRIG V(clk) VAL='0.9' RISE=2 TARG V(out) VAL='0.9' FALL=1
+.measure tran tcq_ave param ='(tcq_rise + tcq_fall)/2'   
+
+.control
+set hcopypscolor = 1
+set color0 = white
+set color1 = black
+
+run
+set curplottitle= "M P Samartha-2023102038"
+plot clk+4, in+2, out  
+* plot clk+4, in+2, mid1
+* plot clk+6, in+4, mid1 +2, d1 
+.endc

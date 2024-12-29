@@ -1,0 +1,295 @@
+
+.include ../TSMC_180nm.txt
+* .include ../Gates/gates.cir
+.param vdd=1.8
+.param LAMBDA=0.09u
+.param width_N={10*LAMBDA}
+.param width_P={2*width_N}
+.global vdd gnd
+
+.global node01 node02 node03 
+.global node11 node12 node13 node14 node15 node16 
+.global node21 node22 node23 node24 node25 node26 
+.global node31 node32 node33 node34 node35 node36
+.global G0_bar G1_bar G2_bar G3_bar
+.global P0_bar P1_bar P2_bar P3_bar
+.global C0_bar Pout_bar Gout_bar
+.global A0 A1 A2 A3 B0 B1 B2 B3 C0
+.global A0_after A1_after A2_after A3_after B0_after B1_after B2_after B3_after C0_after
+
+Vdd vdd gnd dc 1.8
+
+* INPUTS HERE
+* Va0 A0 gnd pulse 1.8 0 0 10ps 10ps 10n 20n
+* Va1 A1 gnd pulse 1.8 0 0 10ps 10ps 10n 20n
+* Va2 A2 gnd pulse 1.8 0 0 10ps 10ps 10n 20n
+* Va3 A3 gnd pulse 0 1.8 0 10ps 10ps 10n 20n
+
+* Vb0 B0 gnd pulse 0 1.8 0 10ps 10ps 10n 20n
+* Vb1 B1 gnd pulse 1.8 0 0 10ps 10ps 10n 20n
+* Vb2 B2 gnd pulse 1.8 0 0 10ps 10ps 10n 20n
+* Vb3 B3 gnd pulse 1.8 0 0 10ps 10ps 10n 20n
+
+* Vc0 C0 gnd pulse 1.8 0 1ns 10ps 10ps 10n 20n
+
+VA0 A0 gnd dc 0
+VA1 A1 gnd dc 0
+VA2 A2 gnd dc 0
+VA3 A3 gnd dc 0
+
+VB0 B0 gnd dc 1.8
+VB1 B1 gnd dc 1.8
+VB2 B2 gnd dc 1.8
+VB3 B3 gnd dc 0
+
+VC0 C0 gnd dc 1.8
+
+* Va  A0  gnd pulse 1.8 0 10ns 1ns   1ns   20ns 40ns
+* Vb  B0  gnd pulse 1.8 0 10ns 1ns   1ns   40ns 80ns
+
+.subckt ff_tspc  out    in     clk    width_N = {width_N} width_P = {width_P}
+
+    * negative edge triggered latch (master)
+    M1    d1   in     vdd    vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+2*2*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+2*2*width_P} 
+
+    M2    mid1     clk    d1   vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+2*2*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+2*2*width_P} 
+
+    M3    mid1     in     gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+    
+    M4    d2   mid1   vdd    vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+2*2*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+2*2*width_P} 
+
+    M5    int1     clk    d2   vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+2*2*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+2*2*width_P} 
+
+    M6    int1     mid1   gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+
+    x_rep int2 int1 inv width_N={10*LAMBDA} width_P={20*LAMBDA}u
+
+    * positive edge triggered latch (slave)
+    M7    mid2   int2   vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P} 
+
+    M8    mid2   clk    d3     gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+2*2*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+2*2*width_N}
+
+    M9    d3     int2   gnd    gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+2*2*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+2*2*width_N}
+    
+    M10   out1    mid2   vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P} 
+
+    M11   out1    clk    d4     gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+2*2*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+2*2*width_N}
+
+    M12   d4     mid2   gnd    gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+2*2*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+2*2*width_N}
+
+    x2 out out1 inv width_N={10*LAMBDA} width_P={20*LAMBDA}
+
+.ends ff_tspc
+
+.subckt inv  out    in     width_N = {width_N} width_P = {width_P}
+    MP    out    in     vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN    out    in     gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+.ends inv
+
+.subckt nand_2ip  out    a    b    width_N = {width_N} width_P = {width_P}
+    MP1   out    a    vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MP2   out    b    vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN1   out    a    int1    gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+
+    MN2   int1    b    gnd    gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+.ends nand_2ip
+
+.subckt nor_2ip  out    a    b    width_N = {width_N} width_P = {width_P}
+    MP1   int1    a    vdd    vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+4*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+4*width_P}
+
+    MP2   out    b    int1    vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+4*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+4*width_P}
+
+    MN1   out    a    gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+
+    MN2   out    b    gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+.ends nor_2ip
+
+.subckt and_2ip out    a    b    width_N = {width_N} width_P = {width_P}
+    x1 int1 a b nand_2ip width_N = {width_N} width_P = {width_P}
+    x2 out int1 inv width_N = {width_N} width_P = {width_P}
+.ends and_2ip
+
+.subckt or_2ip out    a    b    width_N = {width_N} width_P = {width_P}
+    x1 int1 a b nor_2ip width_N = {width_N} width_P = {width_P}
+    x2 out int1 inv width_N = {width_N} width_P = {width_P}
+.ends or_2ip
+
+.subckt xor_2ip  out    a    b    width_N = {width_N} width_P = {width_P}
+    x1 a_bar a inv width_N = {width_N} width_P = {width_P}
+
+    MP1 out b a vdd CMOSP W={width_P} L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN1 out b a_bar gnd CMOSN W={width_N} L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+
+    MP2 out a b vdd CMOSP W={width_P} L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN2 out a_bar b gnd CMOSN W={width_N} L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+
+.ends xor_2ip
+
+.subckt cla_4_bit S3 S2 S1 S0 Cout width_N={width_N} width_P={width_P}
+    x_not1 C0_bar C0_after inv width_N={width_N} width_P={width_P}
+    
+    x_xor4 node01 A0_after B0_after xor_2ip width_N={width_N} width_P={width_P}
+    x_xor3 node11 A1_after B1_after xor_2ip width_N={width_N} width_P={width_P}
+    x_xor2 node21 A2_after B2_after xor_2ip width_N={width_N} width_P={width_P}
+    x_xor1 node31 A3_after B3_after xor_2ip width_N={width_N} width_P={width_P}
+
+    x_nor4 P0_bar A0_after B0_after nor_2ip width_N={width_N} width_P={width_P}
+    x_nor3 P1_bar A1_after B1_after nor_2ip width_N={width_N} width_P={width_P}
+    x_nor2 P2_bar A2_after B2_after nor_2ip width_N={width_N} width_P={width_P}
+    x_nor1 P3_bar A3_after B3_after nor_2ip width_N={width_N} width_P={width_P}
+
+    x_nand4 G0_bar A0_after B0_after nand_2ip width_N={width_N} width_P={width_P}
+    x_nand3 G1_bar A1_after B1_after nand_2ip width_N={width_N} width_P={width_P}
+    x_nand2 G2_bar A2_after B2_after nand_2ip width_N={width_N} width_P={width_P}
+    x_nand1 G3_bar A3_after B3_after nand_2ip width_N={width_N} width_P={width_P}
+
+    x_or4 node02 C0_bar P0_bar or_2ip width_N={width_N} width_P={width_P}
+    x_or3 node12 G0_bar P1_bar or_2ip width_N={width_N} width_P={width_P}
+    x_or2 node22 G1_bar P2_bar or_2ip width_N={width_N} width_P={width_P}
+    x_or1 node32 G2_bar P3_bar or_2ip width_N={width_N} width_P={width_P}
+
+    x_nand8 node03 node02 G0_bar nand_2ip width_N={width_N} width_P={width_P}
+    x_nand7 node13 node12 G1_bar nand_2ip width_N={width_N} width_P={width_P}
+    x_nand6 node23 node22 G2_bar nand_2ip width_N={width_N} width_P={width_P}
+    x_nand5 node33 node32 G3_bar nand_2ip width_N={width_N} width_P={width_P}
+
+    x_nor7 node14 P1_bar P0_bar nor_2ip width_N={width_N} width_P={width_P}
+    x_nor6 node24 P2_bar P1_bar nor_2ip width_N={width_N} width_P={width_P}
+    x_nor5 node34 P3_bar P2_bar nor_2ip width_N={width_N} width_P={width_P}
+
+    x_and3 node15 node14 C0_after and_2ip width_N={width_N} width_P={width_P}
+    x_and2 node25 node24 node03 and_2ip width_N={width_N} width_P={width_P}
+    x_and1 node35 node34 node13 and_2ip width_N={width_N} width_P={width_P}
+
+    x_or6 node16 node13 node15 or_2ip width_N={width_N} width_P={width_P}
+    x_or5 node26 node23 node25 or_2ip width_N={width_N} width_P={width_P}
+
+    x_nor8 Gout_bar node33 node35 nor_2ip width_N={width_N} width_P={width_P}
+    x_nand9 Pout_bar node34 node14 nand_2ip width_N={width_N} width_P={width_P}
+    x_or7 node36 C0_bar Pout_bar or_2ip width_N={width_N} width_P={width_P}
+    
+    x_nand10 Cout node36 Gout_bar nand_2ip width_N={width_N} width_P={width_P}
+
+    x_xor8 S0 node01 C0_after xor_2ip width_N={width_N} width_P={width_P}
+    x_xor7 S1 node11 node03 xor_2ip width_N={width_N} width_P={width_P}
+    x_xor6 S2 node21 node16 xor_2ip width_N={width_N} width_P={width_P}
+    x_xor5 S3 node31 node26 xor_2ip width_N={width_N} width_P={width_P}
+
+    * x_load1 z1 S0 inv width_N={width_N} width_P={width_P}
+    * x_load2 z2 S1 inv width_N={width_N} width_P={width_P}
+    * x_load3 z3 S2 inv width_N={width_N} width_P={width_P}
+    * x_load4 z4 S3 inv width_N={width_N} width_P={width_P}
+    * x_load5 z5 Cout inv width_N={width_N} width_P={width_P}
+
+.ends cla_4_bit
+
+x_ff_A0 A0_after A0 clk ff_tspc width_N = {width_N} width_P = {width_P}
+x_ff_A1 A1_after A1 clk ff_tspc width_N = {width_N} width_P = {width_P}
+x_ff_A2 A2_after A2 clk ff_tspc width_N = {width_N} width_P = {width_P}
+x_ff_A3 A3_after A3 clk ff_tspc width_N = {width_N} width_P = {width_P}
+
+x_ff_B0 B0_after B0 clk ff_tspc width_N = {width_N} width_P = {width_P}
+x_ff_B1 B1_after B1 clk ff_tspc width_N = {width_N} width_P = {width_P}
+x_ff_B2 B2_after B2 clk ff_tspc width_N = {width_N} width_P = {width_P}
+x_ff_B3 B3_after B3 clk ff_tspc width_N = {width_N} width_P = {width_P}
+
+x_ff_C0 C0_after C0 clk ff_tspc width_N = {width_N} width_P = {width_P}
+
+x_ff_S0 S0 S0_before clk ff_tspc width_N = {width_N} width_P = {width_P}
+x_ff_S1 S1 S1_before clk ff_tspc width_N = {width_N} width_P = {width_P}
+x_ff_S2 S2 S2_before clk ff_tspc width_N = {width_N} width_P = {width_P}
+x_ff_S3 S3 S3_before clk ff_tspc width_N = {width_N} width_P = {width_P}
+
+x_ff_Cout Cout Cout_before clk ff_tspc width_N = {width_N} width_P = {width_P}
+
+x_cla_4_bit S3_before S2_before S1_before S0_before Cout_before cla_4_bit width_N = {width_N} width_P = {width_P}
+
+.tran 1ps 10ns 1ps
+.ic v(S3) = 0
+.ic v(S2) = 0
+.ic v(S1) = 0
+.ic v(S0) = 0
+.ic v(Cout) = 0
+.ic v(A0) = 0
+.ic v(A1) = 0
+.ic v(A2) = 0
+.ic v(A3) = 0
+.ic v(B0) = 0
+.ic v(B1) = 0
+.ic v(B2) = 0
+.ic v(B3) = 0
+.ic v(C0) = 0
+.ic v(clk) = 0
+.ic v(A0_after) = 0
+.ic v(A1_after) = 0
+.ic v(A2_after) = 0
+.ic v(A3_after) = 0
+.ic v(B0_after) = 0
+.ic v(B1_after) = 0
+.ic v(B2_after) = 0
+.ic v(B3_after) = 0
+.ic v(C0_after) = 0
+.ic v(S0_before) = 0
+.ic v(S1_before) = 0
+.ic v(S2_before) = 0
+.ic v(S3_before) = 0
+.ic v(Cout_before) = 0
+
+* clk - out propagation delay
+.measure tran t_rise_b0 TRIG V(B0_after) VAL='0.9' RISE=1 TARG V(S3_before) VAL='0.9' RISE=1
+.measure tran t_rise_b1 TRIG V(B1_after) VAL='0.9' RISE=1 TARG V(S3_before) VAL='0.9' RISE=1
+.measure tran t_rise_b2 TRIG V(B2_after) VAL='0.9' RISE=1 TARG V(S3_before) VAL='0.9' RISE=1
+* .measure tran t_fall TRIG V(clk) VAL='0.9' FALL=1 TARG V(S3) VAL='0.9' FALL=1
+* .measure tran prop_delay param ='(t_rise + t_fall)/2'
+
+* 20lambda: 304p, 245p, 275p
+* saturates around 90p
+
+.control
+set hcopypscolor = 1
+set color0 = white
+set color1 = black
+* plot current through Vdd source
+run
+let x = -(Vdd#branch)
+set curplottitle= "M P Samartha-2023102038"
+* plot B0+10, Cout+8, S3+6 S2+4 S1+2 S0
+plot clk+10, Cout+8, S3+6 S2+4 S1+2 S0
+plot A0_after+10, A1_after+8, A2_after+6 A3_after+4
+plot B0_after+10, B1_after+8, B2_after+6 B3_after+4
+plot clk+10, Cout_before+8, S3_before+6 S2_before+4 S1_before+2 S0_before
+* plot x
+
+* plot clk+4, S0+2, S0_before
+.endc

@@ -1,0 +1,48 @@
+* SPICE3 file created from /home/mpsamartha/Ubuntu_Backed/Project/Magic/not_layout.ext - technology: scmos
+
+.include TSMC_180nm.txt
+.param vdd=1.8
+.param LAMBDA=0.09u
+.global vdd gnd
+.option scale=0.01u
+
+M1000 out in vdd w_0_0# CMOSP w=180 l=18
++  ad=8100 pd=450 as=8100 ps=450
+M1001 out in gnd Gnd CMOSN w=90 l=18
++  ad=4050 pd=270 as=4050 ps=270
+C0 vdd w_0_0# 0.02fF
+C1 out in 0.05fF
+C2 gnd in 0.02fF
+C3 w_0_0# in 0.07fF
+C4 out w_0_0# 0.02fF
+C5 gnd Gnd 0.02fF
+C6 out Gnd 0.04fF
+C7 vdd Gnd 0.01fF
+C8 in Gnd 0.13fF
+C9 w_0_0# Gnd 0.77fF
+
+Vdd vdd gnd dc 1.8
+* trise = tfall = 5% of T_on
+Vin  in  gnd pulse 1.8 0 0 1ns  1ns  10ns 20ns
+
+* .ic v(out) = 0
+.tran 100ps 50ns 1ps
+* CL out gnd 50f
+
+* clk - out propagation delay
+.measure tran t_rise TRIG V(in) VAL='0.9' FALL=2 TARG V(out) VAL='0.9' RISE=2
+.measure tran t_fall TRIG V(in) VAL='0.9' RISE=2 TARG V(out) VAL='0.9' FALL=2
+.measure tran prop_delay param ='(t_rise + t_fall)/2'
+
+* 20lambda: 304p, 245p, 275p
+* saturates around 90p
+
+.control
+set hcopypscolor = 1
+set color0 = white
+set color1 = black
+
+run
+set curplottitle= "M P Samartha-2023102038"
+plot  out   
+.endc

@@ -1,0 +1,69 @@
+* This file contains the subcircuits for the basic gates
+
+.subckt inv  out    in     width_N = {width_N} width_P = {width_P}
+    MP    out    in     vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN    out    in     gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+.ends inv
+
+.subckt nand_2ip  out    a    b    width_N = {width_N} width_P = {width_P}
+    MP1   out    a    vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MP2   out    b    vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN1   out    a    int1    gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+
+    MN2   int1    b    gnd    gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+.ends nand_2ip
+
+.subckt nor_2ip  out    a    b    width_N = {width_N} width_P = {width_P}
+    MP1   int1    a    vdd    vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+4*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+4*width_P}
+
+    MP2   out    b    int1    vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+4*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+4*width_P}
+
+    MN1   out    a    gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+
+    MN2   out    b    gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+.ends nor_2ip
+
+.subckt and_2ip out    a    b    width_N = {width_N} width_P = {width_P}
+    x1 int1 a b nand_2ip width_N = {width_N} width_P = {width_P}
+    x2 out int1 inv width_N = {width_N} width_P = {width_P}
+.ends and_2ip
+
+.subckt or_2ip out    a    b    width_N = {width_N} width_P = {width_P}
+    x1 int1 a b nor_2ip width_N = {width_N} width_P = {width_P}
+    x2 out int1 inv width_N = {width_N} width_P = {width_P}
+.ends or_2ip
+
+.subckt xor_2ip  out    a    b    width_N = {width_N} width_P = {width_P}
+    x1 a_bar a inv width_N = {width_N} width_P = {width_P}
+
+    MP1 out b a vdd CMOSP W={width_P} L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN1 out b a_bar gnd CMOSN W={width_N} L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+
+    MP2 out a b vdd CMOSP W={width_P} L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN2 out a_bar b gnd CMOSN W={width_N} L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+
+.ends xor_2ip
+
+.subckt xnor_2ip  out    a    b    width_N = {width_N} width_P = {width_P}
+    x1 int1 a b xor_2ip width_N = {width_N} width_P = {width_P}
+    x2 out int1 inv width_N = {width_N} width_P = {width_P}
+.ends xnor_2ip

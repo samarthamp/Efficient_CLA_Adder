@@ -1,0 +1,67 @@
+* SPICE3 file created from xor_v2_layout.ext - technology: scmos
+
+.include TSMC_180nm.txt
+.param vdd=1.8
+.param LAMBDA=0.09u
+.global vdd gnd
+.option scale=0.09u
+
+M1000 a_bar a vdd w_n42_22# CMOSP w=20 l=2
++  ad=100 pd=50 as=100 ps=50
+M1001 out b a w_n42_n33# CMOSP w=20 l=2
++  ad=200 pd=100 as=100 ps=50
+M1002 b a out w_n42_n33# CMOSP w=20 l=2
++  ad=100 pd=50 as=0 ps=0
+M1003 out b a_bar Gnd CMOSN w=10 l=2
++  ad=100 pd=60 as=100 ps=60
+M1004 b a_bar out Gnd CMOSN w=10 l=2
++  ad=50 pd=30 as=0 ps=0
+M1005 a_bar a gnd Gnd CMOSN w=10 l=2
++  ad=0 pd=0 as=50 ps=30
+C0 a w_n42_22# 0.07fF
+C1 out b 0.26fF
+C2 a_bar b 0.66fF
+C3 out w_n42_n33# 0.05fF
+C4 a_bar w_n42_n33# 0.35fF
+C5 a b 0.01fF
+C6 gnd a 0.17fF
+C7 a w_n42_n33# 0.09fF
+C8 vdd w_n42_22# 0.02fF
+C9 w_n42_n33# b 0.09fF
+C10 out a_bar 0.02fF
+C11 a_bar w_n42_22# 0.02fF
+C12 a_bar a 0.06fF
+C13 out Gnd 0.06fF
+C14 b Gnd 0.45fF
+C15 gnd Gnd 0.02fF
+C16 a_bar Gnd 1.12fF
+C17 vdd Gnd 0.02fF
+C18 a Gnd 0.00fF
+C19 w_n42_n33# Gnd 1.35fF
+C20 w_n42_22# Gnd 0.77fF
+
+Vdd vdd gnd dc 1.8
+* trise = tfall = 5% of T_on
+Va  a  gnd pulse 1.8 0 5n 100ps  100ps  10ns 20ns
+Vb  b  gnd pulse 1.8 0 0  100ps  100ps  20ns 40ns
+* .ic v(out) = 0
+.tran 1ps 100ns
+* CL out gnd 50f
+
+* clk - out propagation delay
+.measure tran t_rise TRIG V(a) VAL='0.9' RISE=1 TARG V(out) VAL='0.9' RISE=2
+.measure tran t_fall TRIG V(a) VAL='0.9' RISE=2 TARG V(out) VAL='0.9' FALL=3
+.measure tran prop_delay param ='(t_rise + t_fall)/2'
+
+* 20lambda: 304p, 245p, 275p
+* saturates around 90p
+
+.control
+set hcopypscolor = 1
+set color0 = white
+set color1 = black
+
+run
+set curplottitle= "M P Samartha-2023102038"
+plot a+4, b+2, out
+.endc

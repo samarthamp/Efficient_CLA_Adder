@@ -1,0 +1,75 @@
+** Implementing Xor gate (2 input)
+
+.include ../TSMC_180nm.txt
+.param vdd=1.8
+.param LAMBDA=0.09u
+.param width_N={20*LAMBDA}
+.param width_P={2*width_N}
+.global vdd gnd
+
+Vdd vdd gnd dc 1.8
+* trise = tfall = 5% of T_on
+Va  a  gnd pulse 1.8 0 10ns 10ps   10ps   20ns 40ns
+Vb  b  gnd pulse 1.8 0 10ns 10ps   10ps   40ns 80ns
+
+.subckt inv  out    in     width_N = {width_N} width_P = {width_P}
+    MP    out    in     vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN    out    in     gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+.ends inv
+
+.subckt xor_2ip  out    a    b    width_N = {width_N} width_P = {width_P}
+
+    x1  a_not a inv width_N = {width_N} width_P = {width_P}
+    x2  b_not b inv width_N = {width_N} width_P = {width_P}
+
+    MP1 int1 a vdd vdd CMOSP W={2*width_P} L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+4*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+4*width_P}
+
+    MP2 out a_not int1 vdd CMOSP W={2*width_P} L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+4*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+4*width_P}
+
+    MP3 int1 b vdd vdd CMOSP W={2*width_P} L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+4*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+4*width_P}
+
+    MP4 out b_not int1 vdd CMOSP W={2*width_P} L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+4*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+4*width_P}
+
+    MN1 out a int2 gnd CMOSN W={2*width_N} L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+
+    MN2 int2 b gnd gnd CMOSN W={2*width_N} L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+
+    MN3 out a_not int3 gnd CMOSN W={2*width_N} L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+
+    MN4 int3 b_not gnd gnd CMOSN W={2*width_N} L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+4*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+4*width_N}
+
+.ends xor_2ip
+
+x1 out a b xor_2ip width_N = {width_N} width_P = {width_P}
+* CL out gnd 100f
+
+.ic v(out) = 0
+.tran 1ps 200ns
+
+* a - out propagation delay
+.measure tran t_rise TRIG V(a) VAL='0.9' RISE=1 TARG V(out) VAL='0.9' RISE=1    
+.measure tran t_fall TRIG V(a) VAL='0.9' RISE=2 TARG V(out) VAL='0.9' FALL=1
+.measure tran prop_delay param ='(t_rise + t_fall)/2'
+
+* 20lambda: 288p, 311p, 299p
+
+.control
+set hcopypscolor = 1
+set color0 = white
+set color1 = black
+
+run
+set curplottitle= "M P Samartha-2023102038"
+plot a+4, b+2, out   
+.endc

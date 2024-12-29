@@ -1,0 +1,44 @@
+** Implementing inverter
+
+.include ../TSMC_180nm.txt
+.param vdd=1.8
+.param LAMBDA=0.09u
+.param width_N={10*LAMBDA}
+.param width_P={2*width_N}
+.global vdd gnd
+
+Vdd vdd gnd dc 1.8
+* trise = tfall = 5% of T_on
+Vin  in  gnd pulse 1.8 0 10ns 1ps   1ps   20ns 40ns
+
+* D G S B
+.subckt inv  out    in     width_N = {width_N} width_P = {width_P}
+    MP    out    in     vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN    out    in     gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+.ends inv
+
+x1 out in inv width_N = {width_N} width_P = {width_P}
+
+.ic v(out) = 0
+.tran 1ps 200ns
+
+* clk - out propagation delay
+.measure tran t_rise TRIG V(in) VAL='0.9' FALL=2 TARG V(out) VAL='0.9' RISE=2
+.measure tran t_fall TRIG V(in) VAL='0.9' RISE=2 TARG V(out) VAL='0.9' FALL=2
+.measure tran prop_delay param ='(t_rise + t_fall)/2'
+
+* 20lambda: 304p, 245p, 275p
+* saturates around 90p
+
+.control
+set hcopypscolor = 1
+set color0 = white
+set color1 = black
+
+run
+set curplottitle= "M P Samartha-2023102038"
+* plot in+2, out   
+.endc

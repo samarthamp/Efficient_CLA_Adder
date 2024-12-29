@@ -1,0 +1,94 @@
+** Implementing TSPC flip-flop
+
+.include ../TSMC_180nm.txt
+.param vdd=1.8
+.param LAMBDA=0.09u
+.param width_N={10*LAMBDA}
+.param width_P={2*width_N}
+.global vdd gnd
+
+Vdd vdd gnd dc 1.8
+Vin  in  gnd pulse 0 1.8 0 10ps   10ps   20ns 40ns
+Vclk clk gnd pulse 0 1.8 10ns 10ps   10ps   10ns 20ns
+
+* D G S B
+.subckt inv  out    in     width_N = {width_N} width_P = {width_P}
+    MP    out    in     vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P}
+
+    MN    out    in     gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+.ends inv
+
+* D G S B
+.subckt ff_tspc  out    in     clk    width_N = {width_N} width_P = {width_P}
+
+    * negative edge triggered latch (master)
+    M1    d1   in     vdd    vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+2*2*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+2*2*width_P} 
+
+    M2    mid1     clk    d1   vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+2*2*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+2*2*width_P} 
+
+    M3    mid1     in     gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+    
+    M4    d2   mid1   vdd    vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+2*2*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+2*2*width_P} 
+
+    M5    int1     clk    d2   vdd    CMOSP   W={2*width_P}   L={2*LAMBDA}
+    + AS={5*2*width_P*LAMBDA} PS={10*LAMBDA+2*2*width_P} AD={5*2*width_P*LAMBDA} PD={10*LAMBDA+2*2*width_P} 
+
+    M6    int1     mid1   gnd    gnd    CMOSN   W={width_N}   L={2*LAMBDA}
+    + AS={5*width_N*LAMBDA} PS={10*LAMBDA+2*width_N} AD={5*width_N*LAMBDA} PD={10*LAMBDA+2*width_N}
+
+    x_rep int2 int1 inv width_N={10*LAMBDA} width_P={20*LAMBDA}u
+
+    * positive edge triggered latch (slave)
+    M7    mid2   int2   vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P} 
+
+    M8    mid2   clk    d3     gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+2*2*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+2*2*width_N}
+
+    M9    d3     int2   gnd    gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+2*2*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+2*2*width_N}
+    
+    M10   out1    mid2   vdd    vdd    CMOSP   W={width_P}   L={2*LAMBDA}
+    + AS={5*width_P*LAMBDA} PS={10*LAMBDA+2*width_P} AD={5*width_P*LAMBDA} PD={10*LAMBDA+2*width_P} 
+
+    M11   out1    clk    d4     gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+2*2*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+2*2*width_N}
+
+    M12   d4     mid2   gnd    gnd    CMOSN   W={2*width_N}   L={2*LAMBDA}
+    + AS={5*2*width_N*LAMBDA} PS={10*LAMBDA+2*2*width_N} AD={5*2*width_N*LAMBDA} PD={10*LAMBDA+2*2*width_N}
+
+    x2 out out1 inv width_N={10*LAMBDA} width_P={20*LAMBDA}
+
+.ends ff_tspc
+
+x1 out in clk ff_tspc width_N={1*width_N} width_P={width_P}
+* x3 f0 out inv width_N={10*LAMBDA} width_P={20*LAMBDA}
+
+.ic v(out) = 0
+.tran 1ps 100ns
+
+* out rise and fall time
+.measure tran t_rise TRIG V(out) VAL='0.18' RISE=1 TARG V(out) VAL='1.62' RISE=1 
+.measure tran t_fall TRIG V(out) VAL='1.62' FALL=1 TARG V(out) VAL='0.18' FALL=1
+.measure tran tpd_ave param ='(t_rise + t_fall)/2'  
+
+* clk - out propagation delay
+.measure tran tcq_rise TRIG V(clk) VAL='0.9' RISE=1 TARG V(out) VAL='0.9' RISE=1 
+.measure tran tcq_fall TRIG V(clk) VAL='0.9' RISE=2 TARG V(out) VAL='0.9' FALL=1
+.measure tran tcq_ave param ='(tcq_rise + tcq_fall)/2'   
+
+.control
+set hcopypscolor = 1
+set color0 = white
+set color1 = black
+
+run
+set curplottitle= "M P Samartha-2023102038"
+plot clk+4, in+2, out   
+.endc

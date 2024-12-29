@@ -1,0 +1,67 @@
+* SPICE3 file created from xor_v2_layout.ext - technology: scmos
+
+.include TSMC_180nm.txt
+.param vdd=1.8
+.param LAMBDA=0.09u
+.global vdd gnd
+.option scale=0.09u
+
+Vdd vdd gnd dc 1.8
+
+* VA0 A0 gnd dc 0
+* VA1 A1 gnd dc 0
+* VA2 A2 gnd dc 0
+* VA3 A3 gnd dc 0
+
+* VB0 B0 gnd dc 1.8
+* VB1 B1 gnd dc 1.8
+* VB2 B2 gnd dc 1.8
+* VB3 B3 gnd dc 0
+
+* VC0 C0 gnd dc 1.8
+
+VA0 A0 gnd dc 0
+VA1 A1 gnd dc 0
+VA2 A2 gnd dc 0
+VA3 A3 gnd dc 0
+
+VB0 B0 gnd pulse 0 1.8 1n 10p 10p 1n 2n
+VB1 B1 gnd dc 1.8
+VB2 B2 gnd dc 1.8
+VB3 B3 gnd dc 0
+
+VC0 C0 gnd dc 1.8
+
+.tran 1ps 10ns
+.ic v(S3) = 0
+.ic v(S2) = 0
+.ic v(S1) = 0
+.ic v(S0) = 0
+.ic v(Cout) = 0
+
+* * clk - out propagation delay
+.measure tran t_rise TRIG V(B0) VAL='0.9' RISE=1 TARG V(S3) VAL='0.9' RISE=1
+.measure tran t_fall TRIG V(B0) VAL='0.9' FALL=1 TARG V(S3) VAL='0.9' FALL=1
+.measure tran prop_delay param ='(t_rise + t_fall)/2'
+
+* 20lambda: 304p, 245p, 275p
+* saturates around 90p
+
+.control
+set hcopypscolor = 1
+set color0 = white
+set color1 = black
+* plot current through Vdd source
+run
+let x = -(Vdd#branch)
+set curplottitle= "M P Samartha-2023102038"
+plot B0+10, Cout+8, S3+6 S2+4 S1+2 S0
+plot x
+.endc
+
+
+
+
+
+
+
