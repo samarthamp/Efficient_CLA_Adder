@@ -1,5 +1,5 @@
 # VLSI_Project
-## Name: M.P. Samartha, 2023102038
+## Name: M.P. Samartha, IIIT Hyderabad
 ### Email: m.samartha@students.iiit.ac.in
 
 This is complete repository for the S2024 - VLSI Design Course Project. 
@@ -26,5 +26,3 @@ gates, which is included in "cla_design.v"
 constraints file. Clk, reset are set through pushbuttons, and inputs are
 given through SWs and are displayed on LEDs too. The final outputs are
 displayed on LEDs. Detailed explanation will be provided in the report.
-
-Thank You
